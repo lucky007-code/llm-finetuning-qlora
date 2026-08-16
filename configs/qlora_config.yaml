@@ -1,0 +1,73 @@
+# ==============================================================================
+# Model Engineering & QLoRA Fine-Tuning Configuration
+# ==============================================================================
+
+model:
+  # Supported base backbones:
+  # - "unsloth/llama-3-8b-Instruct-bnb-4bit"
+  # - "unsloth/mistral-7b-instruct-v0.3-bnb-4bit"
+  # - "unsloth/tinyllama-chat-bnb-4bit" (fast lightweight base)
+  # - "meta-llama/Meta-Llama-3-8B-Instruct"
+  base_model_name: "unsloth/llama-3-8b-Instruct-bnb-4bit"
+  max_seq_length: 2048
+  dtype: "bfloat16" # None for auto detection, or "float16", "bfloat16"
+  load_in_4bit: true
+
+qlora:
+  r: 16                     # LoRA rank (higher = more capacity, 16-32 is optimal)
+  lora_alpha: 32            # LoRA scaling factor (typically 2 * r)
+  lora_dropout: 0.05        # Dropout probability for LoRA layers (0 for Unsloth fast path)
+  bias: "none"              # Bias type: "none", "all", "lora_only"
+  use_gradient_checkpointing: "unsloth" # "unsloth" or true reduces VRAM by 60%+
+  random_state: 42
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+
+quantization:
+  load_in_4bit: true
+  bnb_4bit_quant_type: "nf4"        # NormalFloat4 (NF4) optimal information-theoretic density
+  bnb_4bit_use_double_quant: true   # Nested quantization saving additional ~0.37 bits/param
+  bnb_4bit_compute_dtype: "bfloat16"
+
+training:
+  output_dir: "./outputs/qlora_incident_triager"
+  dataset_train_path: "./data/train.jsonl"
+  dataset_val_path: "./data/val.jsonl"
+  dataset_test_path: "./data/test.jsonl"
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 4    # Effective batch size = 2 * 4 = 8
+  warmup_ratio: 0.05
+  num_train_epochs: 3
+  learning_rate: 2.0e-4
+  optim: "paged_adamw_8bit"         # Paged AdamW prevents OOM spikes during gradient surges
+  weight_decay: 0.01
+  lr_scheduler_type: "cosine"
+  logging_steps: 5
+  eval_steps: 25
+  save_strategy: "steps"
+  save_steps: 50
+  save_total_limit: 2
+  fp16: false
+  bf16: true
+  seed: 42
+  report_to: "none"                 # "wandb", "tensorboard", or "none"
+  loss_masking_completion_only: true # Only compute cross-entropy loss over response tokens
+
+prompt:
+  template_type: "llama3"           # "llama3", "chatml", or "alpaca"
+  system_prompt: >-
+    You are an expert Principal Site Reliability & Systems Diagnostics Engineer (SRE).
+    Analyze raw system telemetry, stack traces, and incident alerts.
+    Output a strictly formatted JSON response containing:
+    1. root_cause (detailed diagnostic explanation)
+    2. severity ("P1-CRITICAL", "P2-HIGH", "P3-MEDIUM", "P4-LOW")
+    3. blast_radius (affected microservices/databases)
+    4. mitigation_actions (array of executable bash/python remediation commands)
+    5. preventative_measure (architectural fix to prevent recurrence)

@@ -1,0 +1,22 @@
+{
+  "base_model_name_or_path": "unsloth/llama-3-8b-Instruct-bnb-4bit",
+  "bias": "none",
+  "lora_alpha": 32,
+  "lora_dropout": 0.05,
+  "r": 16,
+  "target_modules": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "task_type": "CAUSAL_LM",
+  "peft_type": "LORA",
+  "total_params": 8030261248,
+  "trainable_params": 20971520,
+  "trainable_percent": 0.26115613617456246,
+  "trained_at": "2026-08-16T22:41:18Z"
+}

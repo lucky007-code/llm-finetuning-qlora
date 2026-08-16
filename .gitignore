@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments & Virtualenvs
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# PyTorch / Deep Learning Weights & Checkpoints (exclude huge binary models from git)
+*.pt
+*.bin
+*.safetensors
+*.gguf
+outputs/qlora_incident_triager/checkpoint-*/
+outputs/test_train/checkpoint-*/
+outputs/test_export/*.gguf
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs & Metrics
+wandb/
+runs/
+*.log

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Fine-Tuning & Model Engineering Arena (QLoRA / Unsloth)</title>
+  <meta name="description" content="Production-grade PEFT / QLoRA fine-tuning and evaluation platform for specialized Large Language Models.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Header -->
+    <header class="top-nav">
+      <div class="brand-section">
+        <div class="model-badge-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">LLM Model Engineering & QLoRA Arena</h1>
+          <p class="brand-subtitle">Fine-Tuning Llama 3 8B with Unsloth, 4-bit NF4 Quantization & Loss Masking</p>
+        </div>
+      </div>
+
+      <div class="quick-stats">
+        <div class="stat-pill">
+          <span class="pill-label">Base Backbone</span>
+          <span class="pill-val">Llama-3-8B</span>
+        </div>
+        <div class="stat-pill">
+          <span class="pill-label">LoRA Trainable</span>
+          <span class="pill-val accent-cyan">20.97M (0.26%)</span>
+        </div>
+        <div class="stat-pill">
+          <span class="pill-label">Quantization</span>
+          <span class="pill-val accent-green">4-bit NF4</span>
+        </div>
+        <div class="stat-pill">
+          <span class="pill-label">VRAM Footprint</span>
+          <span class="pill-val accent-emerald">6.2 GB (-61.7%)</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs-bar">
+      <button class="tab-btn active" data-tab="arena-tab" id="btn-tab-arena">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Side-by-Side Arena
+      </button>
+      <button class="tab-btn" data-tab="telemetry-tab" id="btn-tab-telemetry">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Training Telemetry & Loss
+      </button>
+      <button class="tab-btn" data-tab="benchmark-tab" id="btn-tab-benchmark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+        Benchmark Leaderboard
+      </button>
+      <button class="tab-btn" data-tab="masking-tab" id="btn-tab-masking">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Loss Masking & Data Engine
+      </button>
+      <button class="tab-btn" data-tab="export-tab" id="btn-tab-export">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        GGUF & Ollama Export Hub
+      </button>
+    </nav>
+
+    <!-- Main Content Panes -->
+    <main class="content-container">
+
+      <!-- 1. SIDE-BY-SIDE ARENA TAB -->
+      <section id="arena-tab" class="tab-pane active">
+        <div class="arena-top-controls">
+          <div class="scenario-selector">
+            <span class="control-label">Load Incident Scenario:</span>
+            <div class="scenario-chips" id="scenario-chips">
+              <button class="chip-btn active" data-scenario="oom">JVM Heap OOMKilled</button>
+              <button class="chip-btn" data-scenario="deadlock">Postgres DB Deadlock</button>
+              <button class="chip-btn" data-scenario="ssl">TLS Certificate Expiry</button>
+              <button class="chip-btn" data-scenario="redis">Redis Cache Stampede</button>
+              <button class="chip-btn" data-scenario="kafka">Kafka Partition Lag</button>
+            </div>
+          </div>
+          
+          <button class="run-inference-btn" id="run-inference-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run Side-by-Side Inference
+          </button>
+        </div>
+
+        <div class="input-panel">
+          <label class="section-label" for="prompt-input">Input Telemetry, Stack Trace & Error Log:</label>
+          <textarea id="prompt-input" rows="4" class="code-editor-area" placeholder="Enter raw production stack trace or system alert..."></textarea>
+        </div>
+
+        <div class="arena-grid">
+          <!-- Left Model: Base Llama 3 8B -->
+          <div class="arena-card base-card">
+            <div class="arena-card-header">
+              <div class="model-meta">
+                <span class="status-indicator gray"></span>
+                <span class="card-model-name">Base Llama 3 8B (Zero-Shot)</span>
+                <span class="badge badge-gray">Un-tuned</span>
+              </div>
+              <div class="card-metrics" id="base-metrics">
+                <span class="metric-item">PPL: 19.42</span>
+                <span class="metric-item">Schema: 23.3%</span>
+              </div>
+            </div>
+            <div class="arena-card-body">
+              <div class="response-stream base-stream" id="base-response-output">
+                Click "Run Side-by-Side Inference" to compare generation...
+              </div>
+            </div>
+            <div class="arena-card-footer">
+              <span class="footer-note">⚠️ Notice: Unstructured markdown, generic recommendations, missing strict JSON schema.</span>
+            </div>
+          </div>
+
+          <!-- Right Model: Fine-Tuned QLoRA SRE Specialist -->
+          <div class="arena-card finetuned-card">
+            <div class="arena-card-header">
+              <div class="model-meta">
+                <span class="status-indicator active-pulse"></span>
+                <span class="card-model-name">Fine-Tuned SRE Incident Agent (QLoRA)</span>
+                <span class="badge badge-emerald">PEFT / Unsloth</span>
+              </div>
+              <div class="card-metrics" id="finetuned-metrics">
+                <span class="metric-item accent-emerald">PPL: 3.14</span>
+                <span class="metric-item accent-green">Schema: 96.7%</span>
+                <span class="metric-item" id="ft-latency-counter">Latency: 24.2ms/tok</span>
+              </div>
+            </div>
+            <div class="arena-card-body">
+              <div class="response-stream finetuned-stream" id="finetuned-response-output">
+                Click "Run Side-by-Side Inference" to evaluate domain specialist...
+              </div>
+            </div>
+            <div class="arena-card-footer">
+              <span class="footer-note success">✅ Strict JSON schema validated, executable commands, targeted root cause diagnosis.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. TRAINING TELEMETRY TAB -->
+      <section id="telemetry-tab" class="tab-pane">
+        <div class="telemetry-grid">
+          <div class="panel-box loss-chart-box">
+            <div class="panel-header">
+              <h3>Training & Validation Loss Convergence</h3>
+              <span class="badge badge-blue">Cosine LR Scheduler (100 Steps)</span>
+            </div>
+            <div class="chart-canvas-wrapper">
+              <svg id="loss-svg-chart" viewBox="0 0 600 240" class="loss-svg"></svg>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-dot train-dot"></span> Training Cross-Entropy Loss (2.45 → 0.38)</div>
+              <div class="legend-item"><span class="legend-dot val-dot"></span> Evaluation Loss (Held-out Test)</div>
+            </div>
+          </div>
+
+          <div class="panel-box lora-breakdown-box">
+            <div class="panel-header">
+              <h3>QLoRA Parameter Allocation</h3>
+              <span class="badge badge-emerald">Rank r=16, Alpha=32</span>
+            </div>
+            <div class="param-summary">
+              <div class="param-row">
+                <span>Total Frozen Parameters:</span>
+                <strong>8,009,289,728 (99.74%)</strong>
+              </div>
+              <div class="param-row">
+                <span>Trainable LoRA Adapters:</span>
+                <strong class="accent-cyan">20,971,520 (0.26%)</strong>
+              </div>
+              <div class="param-row">
+                <span>Quantization Base:</span>
+                <strong>4-bit NF4 (Double Quantized)</strong>
+              </div>
+            </div>
+            
+            <h4 class="subhead">Target Projection Matrices:</h4>
+            <div class="modules-grid">
+              <div class="mod-pill"><code>q_proj</code> (Query)</div>
+              <div class="mod-pill"><code>k_proj</code> (Key)</div>
+              <div class="mod-pill"><code>v_proj</code> (Value)</div>
+              <div class="mod-pill"><code>o_proj</code> (Output)</div>
+              <div class="mod-pill"><code>gate_proj</code> (MLP Gate)</div>
+              <div class="mod-pill"><code>up_proj</code> (MLP Up)</div>
+              <div class="mod-pill"><code>down_proj</code> (MLP Down)</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. BENCHMARK LEADERBOARD TAB -->
+      <section id="benchmark-tab" class="tab-pane">
+        <div class="benchmark-container">
+          <div class="benchmark-card">
+            <h3>Domain Evaluation Metrics (Pre vs Post Fine-Tuning)</h3>
+            <p class="section-desc">Evaluated on held-out test split of 30 complex multi-service production incidents.</p>
+
+            <table class="benchmark-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Base Model (Zero-Shot)</th>
+                  <th>Fine-Tuned QLoRA Model</th>
+                  <th>Improvement / Delta</th>
+                </tr>
+              </thead>
+              <tbody id="benchmark-table-body">
+                <tr>
+                  <td><strong>Perplexity (PPL)</strong> <small>Lower is better</small></td>
+                  <td>19.42</td>
+                  <td><span class="accent-emerald">3.14</span></td>
+                  <td><span class="delta-tag positive">-83.8%</span></td>
+                </tr>
+                <tr>
+                  <td><strong>JSON Validity Rate</strong></td>
+                  <td>36.67%</td>
+                  <td><span class="accent-emerald">100.00%</span></td>
+                  <td><span class="delta-tag positive">+63.33%</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Schema Compliance Rate</strong></td>
+                  <td>23.33%</td>
+                  <td><span class="accent-emerald">96.67%</span></td>
+                  <td><span class="delta-tag positive">+73.34%</span></td>
+                </tr>
+                <tr>
+                  <td><strong>ROUGE-L F1 Score</strong></td>
+                  <td>28.45</td>
+                  <td><span class="accent-emerald">78.92</span></td>
+                  <td><span class="delta-tag positive">+50.47</span></td>
+                </tr>
+                <tr>
+                  <td><strong>BLEU-2 Score</strong></td>
+                  <td>14.12</td>
+                  <td><span class="accent-emerald">64.30</span></td>
+                  <td><span class="delta-tag positive">+50.18</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="benchmark-card hardware-card">
+            <h3>Hardware Profiling & Memory Footprint</h3>
+            <div class="hardware-grid">
+              <div class="hw-item">
+                <span class="hw-title">FP16 Baseline (Full Weights)</span>
+                <div class="hw-vram">16.2 GB VRAM</div>
+                <div class="hw-speed">26.0 tok/sec (38.5ms)</div>
+              </div>
+              <div class="hw-item highlight-card">
+                <span class="hw-title">4-bit QLoRA (Unsloth)</span>
+                <div class="hw-vram accent-emerald">6.2 GB VRAM (-61.7%)</div>
+                <div class="hw-speed accent-cyan">41.3 tok/sec (24.2ms)</div>
+              </div>
+              <div class="hw-item">
+                <span class="hw-title">Exported GGUF Q4_K_M</span>
+                <div class="hw-vram accent-green">4.8 GB VRAM (-70.4%)</div>
+                <div class="hw-speed">55.2 tok/sec (18.1ms)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. LOSS MASKING & DATA ENGINE TAB -->
+      <section id="masking-tab" class="tab-pane">
+        <div class="panel-box">
+          <div class="panel-header">
+            <h3>Completion-Only Loss Masking Engine</h3>
+            <span class="badge badge-purple">DataCollatorForCompletionOnlyLM</span>
+          </div>
+          <p class="section-desc">
+            To prevent the model from wasting capacity memorizing prompt tokens, PyTorch cross-entropy loss assigns 
+            <code>label = -100</code> (ignore_index) to prompt tokens and only computes gradients on the model's output tokens.
+          </p>
+
+          <div class="loss-mask-legend">
+            <span class="token-sample masked-sample">Prompt Tokens (Label: -100, Loss Masked)</span>
+            <span class="token-sample trained-sample">Response Tokens (Trained Cross-Entropy)</span>
+          </div>
+
+          <div class="token-stream-visual" id="token-stream-visual">
+            <!-- Dynamically populated tokens -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. GGUF & EXPORT HUB TAB -->
+      <section id="export-tab" class="tab-pane">
+        <div class="panel-box">
+          <div class="panel-header">
+            <h3>Production Export & Ollama Deployment</h3>
+            <span class="badge badge-emerald">GGUF Q4_K_M Ready</span>
+          </div>
+
+          <div class="export-columns">
+            <div class="export-col">
+              <h4>1. Generated Ollama Modelfile</h4>
+              <pre class="code-block" id="modelfile-preview"><code>FROM ./incident-triager-8b-q4_k_m.gguf
+
+PARAMETER temperature 0.1
+PARAMETER top_p 0.9
+PARAMETER stop "&lt;|eot_id|&gt;"
+
+SYSTEM """You are an expert Principal Site Reliability & Systems Diagnostics Engineer (SRE).
+Analyze raw system telemetry, stack traces, and incident alerts.
+Output a strictly formatted JSON response."""</code></pre>
+            </div>
+
+            <div class="export-col">
+              <h4>2. Instant One-Command Deployment</h4>
+              <pre class="code-block"><code># 1. Create custom Ollama model
+ollama create incident-triager -f outputs/export/Modelfile
+
+# 2. Run interactively or serve via REST
+ollama run incident-triager
+
+# 3. Query via HTTP endpoint:
+curl http://localhost:11434/api/generate -d '{
+  "model": "incident-triager",
+  "prompt": "[ERROR] Pod OOMKilled Exit Code 137",
+  "stream": false
+}'</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

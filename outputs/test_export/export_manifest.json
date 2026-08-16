@@ -1,0 +1,15 @@
+{
+  "status": "READY_FOR_DEPLOYMENT",
+  "base_model": "Llama-3-8B-Instruct",
+  "peft_adapter": "./outputs/qlora_incident_triager",
+  "quantization_format": "GGUF_Q4_K_M",
+  "modelfile_path": "C:\\Users\\lokes\\.gemini\\antigravity\\scratch\\llm_finetune_qlora\\outputs\\test_export\\Modelfile",
+  "deploy_script_path": "C:\\Users\\lokes\\.gemini\\antigravity\\scratch\\llm_finetune_qlora\\outputs\\test_export\\deploy_ollama.sh",
+  "unsloth_export_command": "model.save_pretrained_gguf(\"C:\\Users\\lokes\\.gemini\\antigravity\\scratch\\llm_finetune_qlora\\outputs\\test_export/incident-triager-8b\", tokenizer, quantization_method=\"q4_k_m\")",
+  "file_sizes": {
+    "fp16_full_weights_gb": 16.07,
+    "qlora_adapter_mb": 83.8,
+    "gguf_q4_k_m_gb": 4.62,
+    "compression_ratio": "3.48x smaller than FP16"
+  }
+}

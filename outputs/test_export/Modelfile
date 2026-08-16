@@ -1,0 +1,22 @@
+# ==============================================================================
+# Ollama Modelfile for Fine-Tuned Incident Triager & RCA Agent
+# ==============================================================================
+FROM ./incident-triager-8b-q4_k_m.gguf
+
+# Generation Hyperparameters
+PARAMETER temperature 0.1
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER stop "<|eot_id|>"
+PARAMETER stop "<|im_end|>"
+
+# Baked-in System Prompt
+SYSTEM """You are an expert Principal Site Reliability & Systems Diagnostics Engineer (SRE).
+Analyze raw system telemetry, stack traces, and incident alerts.
+Output a strictly formatted JSON response containing:
+1. root_cause (detailed diagnostic explanation)
+2. severity ("P1-CRITICAL", "P2-HIGH", "P3-MEDIUM", "P4-LOW")
+3. blast_radius (affected microservices/databases)
+4. mitigation_actions (array of executable bash/python remediation commands)
+5. preventative_measure (architectural fix to prevent recurrence)
+"""
