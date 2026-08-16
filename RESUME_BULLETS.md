@@ -1,10 +1,10 @@
-# Tailored Resume Bullet Points: LLM Fine-Tuning & Model Engineering
+#LLM Fine-Tuning & Model Engineering
 
 Here are impactful, quantified resume bullet points highlighting your Model Engineering and Parameter-Efficient Fine-Tuning (PEFT) capabilities. Choose the ones that best fit your resume format:
 
 ---
 
-## 🎯 Role: Large Language Model (LLM) / Machine Learning Engineer
+## Large Language Model (LLM) / Machine Learning 
 
 ### Option 1: Comprehensive & Quantified (Recommended)
 > - **Fine-Tuned Llama-3 8B with QLoRA & Unsloth:** Engineered an end-to-end parameter-efficient fine-tuning (PEFT) pipeline using 4-bit NF4 double quantization and completion-only loss masking, reducing training VRAM by **61.7%** (16.2 GB $\to$ 6.2 GB) while training only **0.26%** of model parameters ($r=16, \alpha=32$).
@@ -19,9 +19,3 @@ Here are impactful, quantified resume bullet points highlighting your Model Engi
 > - Built an interactive model evaluation arena in **FastAPI** featuring SSE token streaming, side-by-side zero-shot vs fine-tuned benchmarking, and real-time loss telemetry visualization.
 
 ---
-
-## 🛠️ Key Skills & Keywords for ATS (Applicant Tracking Systems)
-
-- **Techniques:** Parameter-Efficient Fine-Tuning (PEFT), QLoRA, LoRA Adapter Injection, 4-bit NormalFloat4 (NF4) Quantization, Double Quantization, Prompt Loss Masking, Gradient Checkpointing, Weight Merging (`merge_and_unload`).
-- **Frameworks & Tools:** PyTorch, Hugging Face `transformers`, `peft`, `trl` (`SFTTrainer`), `bitsandbytes`, `unsloth`, `accelerate`, `llama.cpp`, GGUF, Ollama, FastAPI.
-- **Evaluation & Profiling:** Perplexity (PPL), ROUGE-1/2/L, SacreBLEU, JSON Schema Validation, VRAM Profiling, Token Latency (ms/tok) & Throughput (tok/sec).
